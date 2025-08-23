@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.projectecho">
+
+    <!-- Wear OS specific features -->
+    <uses-feature android:name="android.hardware.type.watch" />
+    
+    <!-- Audio recording permissions -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    
+    <!-- Storage permissions for saving recordings -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
+        android:maxSdkVersion="28" />
+    
+    <!-- Vibrator permission for haptic feedback -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    
+    <!-- Wake lock to prevent sleep during long recordings -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    
+    <!-- Audio focus management -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.ProjectEcho"
+        android:name=".ProjectEchoApplication"
+        tools:targetApi="31">
+        
+        <!-- Main activity for Wear OS -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.ProjectEcho.NoActionBar"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Wear OS capability declaration -->
+        <meta-data
+            android:name="com.google.android.wearable.standalone"
+            android:value="true" />
+            
+        <!-- Microphone capability -->
+        <meta-data
+            android:name="com.google.android.wearable.input.MicrophoneInput"
+            android:value="true" />
+    </application>
+
+</manifest>
