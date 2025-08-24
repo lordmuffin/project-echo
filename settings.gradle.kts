@@ -15,4 +15,27 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "ProjectEcho"
-include(":app")
+
+// Main Application Modules
+include(":app:watch")
+include(":app:phone")
+
+// Core Modules
+include(":core:common")
+include(":core:database")
+include(":core:network")
+include(":core:datastore")
+include(":core:ui")
+include(":core:domain")
+include(":core:data")
+include(":core:wearable")
+
+// Feature Modules
+include(":features:audio")
+include(":features:permissions")
+include(":features:recording")
+include(":features:playback")
+include(":features:settings")
+
+// Test Modules
+include(":core:testing")

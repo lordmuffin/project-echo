@@ -1,6 +1,6 @@
-# Project Echo - Wear OS Audio Recorder
+# Project Echo - Multi-Module Android Audio Recorder
 
-🎤 **Project Echo** - Professional Wear OS audio recorder with AI transcription capabilities. Record on your watch, sync to phone, get instant text transcription.
+A scalable, modern Android application for audio recording, built with multi-module architecture supporting both Wear OS and mobile platforms.
 
 ## 📋 Implemented Features
 
