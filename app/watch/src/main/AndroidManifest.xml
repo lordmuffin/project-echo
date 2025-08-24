@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.projectecho">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Wear OS specific features -->
     <uses-feature android:name="android.hardware.type.watch" />
@@ -26,15 +25,15 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@android:style/Theme.DeviceDefault"
-        android:name="com.projectecho.watch.WatchApplication"
+        android:theme="@style/Theme.ProjectEcho"
+        android:name=".ProjectEchoApplication"
         tools:targetApi="31">
         
         <!-- Main activity for Wear OS -->
         <activity
-            android:name=".MainActivity"
+            android:name="com.projectecho.MainActivity"
             android:exported="true"
-            android:theme="@android:style/Theme.DeviceDefault"
+            android:theme="@style/Theme.ProjectEcho.NoActionBar"
             android:launchMode="singleTop"
             android:screenOrientation="portrait">
             <intent-filter>

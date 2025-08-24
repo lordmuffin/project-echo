@@ -1,12 +1,16 @@
 package com.projectecho.core.wearable.service.impl
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import com.projectecho.core.common.result.Result
-import com.projectecho.core.datastore.PreferencesDataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.core.DataStore
 import com.projectecho.core.wearable.model.SyncError
 import com.projectecho.core.wearable.model.SyncErrorType
 import com.projectecho.core.wearable.service.*
@@ -16,7 +20,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.PriorityQueue
+import java.util.PriorityQueue
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.min
@@ -26,7 +30,7 @@ import kotlin.math.pow
 class OfflineSyncManagerImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val wearableSyncService: WearableSyncService,
-    private val preferencesDataStore: PreferencesDataStore,
+    private val preferencesDataStore: DataStore<Preferences>,
     private val json: Json
 ) : OfflineSyncManager {
     
@@ -144,7 +148,7 @@ class OfflineSyncManagerImpl @Inject constructor(
         isProcessing.value = true
         var processedCount = 0
         
-        try {
+        return try {
             val operationsToProcess = mutableListOf<QueuedOperation>()
             
             synchronized(operationQueue) {
@@ -164,6 +168,9 @@ class OfflineSyncManagerImpl @Inject constructor(
                         }
                         is Result.Error -> {
                             handleOperationFailure(operation, result.exception)
+                        }
+                        is Result.Loading -> {
+                            // Continue processing, loading state handled elsewhere
                         }
                     }
                 } catch (e: Exception) {
@@ -212,9 +219,9 @@ class OfflineSyncManagerImpl @Inject constructor(
             }
             
             updateQueueStatus()
-            Result.Success(Unit)
+            return Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(e)
+            return Result.Error(e)
         }
     }
     
@@ -248,6 +255,9 @@ class OfflineSyncManagerImpl @Inject constructor(
                             nextRetryTime = currentTime + calculateRetryDelay(operation.retryCount + 1)
                         )
                         failedOperations[operation.id] = updatedOperation
+                    }
+                    is Result.Loading -> {
+                        // Continue processing
                     }
                 }
             } catch (e: Exception) {
@@ -292,6 +302,9 @@ class OfflineSyncManagerImpl @Inject constructor(
                     updateQueueStatus()
                     result
                 }
+                is Result.Loading -> {
+                    Result.Loading
+                }
             }
         } catch (e: Exception) {
             Result.Error(e)
@@ -332,6 +345,7 @@ class OfflineSyncManagerImpl @Inject constructor(
     
     override fun observeNetworkStatus(): Flow<Boolean> = networkStatus.asStateFlow()
     
+    @SuppressLint("MissingPermission") // Permission is declared in app manifest
     override suspend fun isOnline(): Boolean {
         val activeNetwork = connectivityManager.activeNetwork
         val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
@@ -343,7 +357,9 @@ class OfflineSyncManagerImpl @Inject constructor(
         return try {
             this.retryPolicy = policy
             // Persist to preferences
-            preferencesDataStore.saveString("retry_policy", json.encodeToString(policy))
+            preferencesDataStore.edit { preferences ->
+                preferences[stringPreferencesKey("retry_policy")] = json.encodeToString(policy)
+            }
             Result.Success(Unit)
         } catch (e: Exception) {
             Result.Error(e)
@@ -451,6 +467,7 @@ class OfflineSyncManagerImpl @Inject constructor(
         return min(delay, retryPolicy.maxDelayMs)
     }
     
+    @SuppressLint("MissingPermission") // Permission is declared in app manifest
     private fun setupNetworkMonitoring() {
         val networkRequest = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)

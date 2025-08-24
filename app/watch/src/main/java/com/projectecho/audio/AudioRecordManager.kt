@@ -1,6 +1,7 @@
 package com.projectecho.audio
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.media.AudioFormat
@@ -94,10 +95,15 @@ class AudioRecordManager(
      */
     private fun initializeAudioRecord() {
         try {
+            if (!hasAudioPermission()) {
+                throw SecurityException("Audio recording permission not granted")
+            }
+            
             if (minBufferSize == AudioRecord.ERROR_BAD_VALUE) {
                 throw IllegalStateException("Invalid audio configuration")
             }
             
+            @SuppressLint("MissingPermission") // Permission is checked above and declared in manifest
             audioRecord = AudioRecord(
                 AUDIO_SOURCE,
                 SAMPLE_RATE,
@@ -277,12 +283,12 @@ class AudioRecordManager(
                         bytesRead == AudioRecord.ERROR_INVALID_OPERATION -> {
                             Log.e(TAG, "Invalid operation during recording")
                             handleRecordingError("Invalid recording operation")
-                            break
+                            return
                         }
                         bytesRead == AudioRecord.ERROR_BAD_VALUE -> {
                             Log.e(TAG, "Bad value during recording")
                             handleRecordingError("Bad recording parameters")
-                            break
+                            return
                         }
                         else -> {
                             Log.w(TAG, "Unexpected read result: $bytesRead")
@@ -293,7 +299,7 @@ class AudioRecordManager(
             } catch (e: Exception) {
                 Log.e(TAG, "Error in recording loop", e)
                 handleRecordingError("Recording loop error: ${e.message}")
-                break
+                return
             }
         }
     }
