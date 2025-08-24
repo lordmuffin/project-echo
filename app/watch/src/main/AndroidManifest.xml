@@ -26,7 +26,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/Theme.ProjectEcho"
-        android:name=".ProjectEchoApplication"
+        android:name="com.projectecho.watch.ProjectEchoApplication"
         tools:targetApi="31">
         
         <!-- Main activity for Wear OS -->

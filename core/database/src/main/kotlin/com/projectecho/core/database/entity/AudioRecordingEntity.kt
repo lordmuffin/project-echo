@@ -17,7 +17,9 @@ data class AudioRecordingEntity(
     val format: String,
     val sampleRate: Int,
     val channels: Int,
-    val bitDepth: Int
+    val bitDepth: Int,
+    val description: String? = null,
+    val tags: List<String> = emptyList()
 )
 
 /**
@@ -34,7 +36,9 @@ fun AudioRecordingEntity.toDomainModel(): AudioRecording {
         format = AudioFormat.valueOf(format),
         sampleRate = sampleRate,
         channels = channels,
-        bitDepth = bitDepth
+        bitDepth = bitDepth,
+        description = description,
+        tags = tags
     )
 }
 
@@ -52,6 +56,8 @@ fun AudioRecording.toEntity(): AudioRecordingEntity {
         format = format.name,
         sampleRate = sampleRate,
         channels = channels,
-        bitDepth = bitDepth
+        bitDepth = bitDepth,
+        description = description,
+        tags = tags
     )
 }

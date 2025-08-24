@@ -1,6 +1,5 @@
 package com.projectecho.audio
 
-import android.util.Log
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
@@ -19,7 +18,6 @@ import kotlin.math.min
  */
 class CircularAudioBuffer(private val capacity: Int) {
     companion object {
-        private const val TAG = "CircularAudioBuffer"
         private const val CAPACITY_WARNING_THRESHOLD = 0.8f // 80% capacity
     }
     
@@ -32,7 +30,7 @@ class CircularAudioBuffer(private val capacity: Int) {
     private val lock = ReentrantReadWriteLock()
     
     init {
-        Log.d(TAG, "CircularAudioBuffer initialized with capacity: $capacity bytes")
+        // CircularAudioBuffer initialized with capacity: $capacity bytes
     }
     
     /**
@@ -49,7 +47,7 @@ class CircularAudioBuffer(private val capacity: Int) {
             val bytesToWrite = min(length, capacity - availableBytes)
             
             if (bytesToWrite <= 0) {
-                Log.w(TAG, "Buffer overflow, dropping ${length - bytesToWrite} bytes")
+                // Buffer overflow, dropping ${length - bytesToWrite} bytes
                 return@write 0
             }
             
@@ -71,7 +69,7 @@ class CircularAudioBuffer(private val capacity: Int) {
             totalBytesWritten += bytesToWrite
             
             if (isNearCapacity()) {
-                Log.w(TAG, "Buffer nearing capacity: ${getCapacityPercentage()}%")
+                // Buffer nearing capacity: ${getCapacityPercentage()}%
             }
             
             bytesToWrite
@@ -208,7 +206,7 @@ class CircularAudioBuffer(private val capacity: Int) {
             writePosition = 0
             readPosition = 0
             availableBytes = 0
-            Log.d(TAG, "Buffer cleared")
+            // Buffer cleared
         }
     }
     
@@ -322,7 +320,7 @@ class CircularAudioBuffer(private val capacity: Int) {
             readPosition = 0
             writePosition = availableBytes
             
-            Log.d(TAG, "Buffer compacted, available bytes: $availableBytes")
+            // Buffer compacted, available bytes: $availableBytes
         }
     }
 }

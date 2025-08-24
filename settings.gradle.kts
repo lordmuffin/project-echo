@@ -16,9 +16,10 @@ dependencyResolutionManagement {
 
 rootProject.name = "ProjectEcho"
 
-// Main Application Modules
-include(":app:watch")
+// Main Application Modules    
+include(":app")
 include(":app:phone")
+include(":app:watch")
 
 // Core Modules
 include(":core:common")
@@ -33,9 +34,6 @@ include(":core:wearable")
 // Feature Modules
 include(":features:audio")
 include(":features:permissions")
-include(":features:recording")
-include(":features:playback")
-include(":features:settings")
 
 // Test Modules
 include(":core:testing")

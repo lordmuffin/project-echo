@@ -28,7 +28,7 @@ class WearableChannelClientImpl @Inject constructor(
 ) : WearableChannelClient {
     
     private val channelClient by lazy { Wearable.getChannelClient(context) }
-    private val activeChannels = ConcurrentHashMap<String, Channel>()
+    private val activeChannels = ConcurrentHashMap<String, ChannelClient.Channel>()
     private val transferProgress = ConcurrentHashMap<String, MutableStateFlow<TransferProgress>>()
     
     override suspend fun openChannel(nodeId: String, path: String): Result<ChannelHandle> {
@@ -81,7 +81,7 @@ class WearableChannelClientImpl @Inject constructor(
             val buffer = ByteArray(8192)
             
             withContext(Dispatchers.IO) {
-                var bytesRead: Int
+                var bytesRead = 0
                 while (audioData.read(buffer).also { bytesRead = it } != -1) {
                     outputStream.write(buffer, 0, bytesRead)
                     bytesTransferred += bytesRead
@@ -117,7 +117,7 @@ class WearableChannelClientImpl @Inject constructor(
             val buffer = ByteArray(8192)
             
             withContext(Dispatchers.IO) {
-                var bytesRead: Int
+                var bytesRead = 0
                 while (inputStream.read(buffer).also { bytesRead = it } != -1) {
                     outputStream.write(buffer, 0, bytesRead)
                     bytesReceived += bytesRead
@@ -179,7 +179,7 @@ class WearableChannelClientImpl @Inject constructor(
     
     override fun observeChannelEvents(): Flow<ChannelEvent> = callbackFlow {
         val listener = object : ChannelClient.ChannelCallback() {
-            override fun onChannelOpened(channel: Channel) {
+            override fun onChannelOpened(channel: ChannelClient.Channel) {
                 val channelId = channel.toString()
                 activeChannels[channelId] = channel
                 
@@ -192,7 +192,7 @@ class WearableChannelClientImpl @Inject constructor(
             }
             
             override fun onChannelClosed(
-                channel: Channel,
+                channel: ChannelClient.Channel,
                 closeReason: Int,
                 appSpecificErrorCode: Int
             ) {
@@ -201,9 +201,9 @@ class WearableChannelClientImpl @Inject constructor(
                 transferProgress.remove(channelId)
                 
                 val reason = when (closeReason) {
-                    ChannelClient.CHANNEL_CLOSE_REASON_NORMAL -> CloseReason.NORMAL
-                    ChannelClient.CHANNEL_CLOSE_REASON_REMOTE_CLOSE -> CloseReason.NORMAL
-                    ChannelClient.CHANNEL_CLOSE_REASON_LOCAL_CLOSE -> CloseReason.NORMAL
+                    0 -> CloseReason.NORMAL  // Normal close
+                    1 -> CloseReason.NORMAL  // Remote close
+                    2 -> CloseReason.NORMAL  // Local close
                     else -> CloseReason.ERROR
                 }
                 
@@ -216,27 +216,27 @@ class WearableChannelClientImpl @Inject constructor(
             }
             
             override fun onInputClosed(
-                channel: Channel,
+                channel: ChannelClient.Channel,
                 closeReason: Int,
                 appSpecificErrorCode: Int
             ) {
                 val event = ChannelEvent.ChannelInputClosed(
                     channelId = channel.toString(),
                     nodeId = channel.nodeId,
-                    error = if (closeReason == ChannelClient.CHANNEL_CLOSE_REASON_NORMAL) null else "Error code: $closeReason"
+                    error = if (closeReason == 0) null else "Error code: $closeReason"
                 )
                 trySend(event)
             }
             
             override fun onOutputClosed(
-                channel: Channel,
+                channel: ChannelClient.Channel,
                 closeReason: Int,
                 appSpecificErrorCode: Int
             ) {
                 val event = ChannelEvent.ChannelOutputClosed(
                     channelId = channel.toString(),
                     nodeId = channel.nodeId,
-                    error = if (closeReason == ChannelClient.CHANNEL_CLOSE_REASON_NORMAL) null else "Error code: $closeReason"
+                    error = if (closeReason == 0) null else "Error code: $closeReason"
                 )
                 trySend(event)
             }

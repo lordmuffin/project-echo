@@ -219,7 +219,7 @@ inline fun <reified T : NavigationArgs> buildRoute(args: T): String {
  * Type-safe navigation argument parsing from Bundle.
  */
 object NavigationArgsParser {
-    private val json = Json {
+    internal val json = Json {
         ignoreUnknownKeys = true
         coerceInputValues = true
         encodeDefaults = true
@@ -228,14 +228,14 @@ object NavigationArgsParser {
     /**
      * Serialize navigation arguments to string for complex objects.
      */
-    inline fun <reified T : NavigationArgs> serialize(args: T): String {
+    internal inline fun <reified T : NavigationArgs> serialize(args: T): String {
         return json.encodeToString(args)
     }
 
     /**
      * Deserialize navigation arguments from string for complex objects.
      */
-    inline fun <reified T : NavigationArgs> deserialize(serialized: String): T {
+    internal inline fun <reified T : NavigationArgs> deserialize(serialized: String): T {
         return json.decodeFromString(serialized)
     }
 

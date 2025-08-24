@@ -15,6 +15,9 @@ interface AudioRecordingDao {
     @Query("SELECT * FROM audio_recordings ORDER BY timestamp DESC")
     fun getAllRecordings(): Flow<List<AudioRecordingEntity>>
 
+    @Query("SELECT * FROM audio_recordings ORDER BY timestamp DESC")
+    suspend fun getAllRecordingsSync(): List<AudioRecordingEntity>
+
     @Query("SELECT * FROM audio_recordings WHERE id = :id")
     suspend fun getRecordingById(id: String): AudioRecordingEntity?
 
@@ -41,4 +44,13 @@ interface AudioRecordingDao {
 
     @Query("DELETE FROM audio_recordings")
     suspend fun deleteAllRecordings()
+
+    @Query("UPDATE audio_recordings SET title = :title WHERE id = :id")
+    suspend fun updateRecordingTitle(id: String, title: String)
+
+    @Query("UPDATE audio_recordings SET tags = :tags WHERE id = :id")
+    suspend fun updateRecordingTags(id: String, tags: List<String>)
+
+    @Query("UPDATE audio_recordings SET description = :description WHERE id = :id")
+    suspend fun updateRecordingDescription(id: String, description: String)
 }

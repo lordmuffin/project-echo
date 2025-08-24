@@ -2,6 +2,7 @@ package com.projectecho
 
 import android.app.Application
 import android.util.Log
+import com.projectecho.BuildConfig
 
 /**
  * Application class for Project Echo.

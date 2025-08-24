@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
  * - Retry mechanisms for denied permissions
  * - Wear OS optimized UI interactions
  */
-class PermissionHandler(private val context: Context) {
+class PermissionHandler(val context: Context) {
     companion object {
         private const val TAG = "PermissionHandler"
         const val MICROPHONE_PERMISSION_REQUEST_CODE = 1001

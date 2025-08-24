@@ -1,15 +1,18 @@
 package com.projectecho.core.common.coroutines
 
 import com.projectecho.core.common.result.Result
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.delay as coroutineDelay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.retryWhen
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import kotlin.math.pow
 
 /**
  * Utility functions for Flow operations with error handling and retry logic.
@@ -28,11 +31,11 @@ object FlowUtils {
     ): Flow<T> {
         return retryWhen { cause, attempt ->
             if (attempt < maxRetries && retryPredicate(cause)) {
-                val delayMs = (initialDelayMs * kotlin.math.pow(backoffMultiplier, attempt.toDouble()))
+                val delayMs = (initialDelayMs * backoffMultiplier.pow(attempt.toDouble()))
                     .toLong()
                     .coerceAtMost(maxDelayMs)
                 
-                delay(delayMs)
+                coroutineDelay(delayMs)
                 true
             } else {
                 false
@@ -117,7 +120,7 @@ object FlowUtils {
         flow2: Flow<Result<T2>>,
         transform: suspend (T1, T2) -> R
     ): Flow<Result<R>> = flow {
-        kotlinx.coroutines.flow.combine(flow1, flow2) { result1, result2 ->
+        combine(flow1, flow2) { result1, result2 ->
             when {
                 result1 is Result.Loading || result2 is Result.Loading -> Result.Loading
                 result1 is Result.Error -> result1
@@ -140,8 +143,8 @@ object FlowUtils {
      * Debounce flow emissions with error handling.
      */
     fun <T> Flow<T>.debounceWithErrorHandling(timeoutMs: Long = 300L): Flow<T> {
-        return kotlinx.coroutines.flow.debounce(timeoutMs)
-            .catch { exception ->
+        return debounce(timeoutMs)
+            .catch { exception: Throwable ->
                 // Log the error but don't emit it, just skip the emission
                 android.util.Log.w("FlowUtils", "Error in debounced flow", exception)
             }

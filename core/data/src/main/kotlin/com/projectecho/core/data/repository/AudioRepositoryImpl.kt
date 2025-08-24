@@ -103,6 +103,12 @@ class AudioRepositoryImpl @Inject constructor(
             .map { entities -> entities.map { it.toDomainModel() } }
     }
 
+    override suspend fun getAllRecordingsSync(): List<AudioRecording> {
+        return withContext(dispatcher) {
+            audioRecordingDao.getAllRecordingsSync().map { it.toDomainModel() }
+        }
+    }
+
     override suspend fun getRecordingById(id: String): Result<AudioRecording?> {
         return withContext(dispatcher) {
             try {
@@ -189,5 +195,55 @@ class AudioRepositoryImpl @Inject constructor(
 
     override fun getPlaybackPosition(): Flow<Long> {
         return localDataSource.getPlaybackPosition()
+    }
+
+    override suspend fun getRecording(id: String): AudioRecording? {
+        return withContext(dispatcher) {
+            val entity = audioRecordingDao.getRecordingById(id)
+            entity?.toDomainModel()
+        }
+    }
+
+    override suspend fun getRecordingAudioStream(id: String): java.io.InputStream? {
+        return withContext(dispatcher) {
+            try {
+                localDataSource.getRecordingAudioStream(id)
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
+
+    override suspend fun updateRecordingTitle(id: String, title: String): Result<Unit> {
+        return withContext(dispatcher) {
+            try {
+                audioRecordingDao.updateRecordingTitle(id, title)
+                Result.Success(Unit)
+            } catch (e: Exception) {
+                Result.Error(e)
+            }
+        }
+    }
+
+    override suspend fun updateRecordingTags(id: String, tags: List<String>): Result<Unit> {
+        return withContext(dispatcher) {
+            try {
+                audioRecordingDao.updateRecordingTags(id, tags)
+                Result.Success(Unit)
+            } catch (e: Exception) {
+                Result.Error(e)
+            }
+        }
+    }
+
+    override suspend fun updateRecordingDescription(id: String, description: String): Result<Unit> {
+        return withContext(dispatcher) {
+            try {
+                audioRecordingDao.updateRecordingDescription(id, description)
+                Result.Success(Unit)
+            } catch (e: Exception) {
+                Result.Error(e)
+            }
+        }
     }
 }

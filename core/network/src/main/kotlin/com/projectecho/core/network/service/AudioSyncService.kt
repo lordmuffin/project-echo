@@ -1,7 +1,5 @@
 package com.projectecho.core.network.service
 
-import com.projectecho.core.network.model.AudioUploadResponse
-import com.projectecho.core.network.model.SyncStatusResponse
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.*

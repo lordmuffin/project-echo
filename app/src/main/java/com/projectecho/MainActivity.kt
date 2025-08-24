@@ -21,7 +21,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.projectecho.audio.HealthMetrics
 import com.projectecho.permissions.PermissionHandler
+import com.projectecho.permissions.PermissionState
 import com.projectecho.ui.RecordingController
 import com.projectecho.ui.RecordingUiState
 import kotlinx.coroutines.delay
@@ -311,7 +313,7 @@ fun HealthMonitorDisplay(
                 Text(
                     text = "Buffer overruns: ${metrics.bufferOverruns}",
                     fontSize = 8.sp,
-                    color = Color.Orange
+                    color = Color(0xFFFFA500)
                 )
             }
         }

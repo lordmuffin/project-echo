@@ -1,6 +1,7 @@
 package com.projectecho.audio
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.media.AudioFormat
@@ -92,23 +93,33 @@ class AudioRecordManager(
     /**
      * Initialize AudioRecord with optimal configuration for Wear OS
      */
+    @SuppressLint("MissingPermission")
     private fun initializeAudioRecord() {
         try {
             if (minBufferSize == AudioRecord.ERROR_BAD_VALUE) {
                 throw IllegalStateException("Invalid audio configuration")
             }
             
-            audioRecord = AudioRecord(
-                AUDIO_SOURCE,
-                SAMPLE_RATE,
-                CHANNEL_CONFIG,
-                AUDIO_FORMAT,
-                optimalBufferSize
-            ).also { record ->
-                if (record.state != AudioRecord.STATE_INITIALIZED) {
-                    record.release()
-                    throw IllegalStateException("Failed to initialize AudioRecord")
+            // Check permission before creating AudioRecord
+            if (!hasAudioPermission()) {
+                throw SecurityException("Microphone permission not granted")
+            }
+            
+            try {
+                audioRecord = AudioRecord(
+                    AUDIO_SOURCE,
+                    SAMPLE_RATE,
+                    CHANNEL_CONFIG,
+                    AUDIO_FORMAT,
+                    optimalBufferSize
+                ).also { record ->
+                    if (record.state != AudioRecord.STATE_INITIALIZED) {
+                        record.release()
+                        throw IllegalStateException("Failed to initialize AudioRecord")
+                    }
                 }
+            } catch (e: SecurityException) {
+                throw SecurityException("Microphone permission denied during AudioRecord creation", e)
             }
             
             recordingBuffer = CircularAudioBuffer(optimalBufferSize * 2)
@@ -255,6 +266,7 @@ class AudioRecordManager(
     /**
      * Main audio recording loop (Story 2: Long Recording Stability)
      */
+    @OptIn(kotlin.experimental.ExperimentalTypeInference::class)
     private suspend fun recordAudioLoop() {
         val buffer = ByteArray(minBufferSize)
         
@@ -277,12 +289,12 @@ class AudioRecordManager(
                         bytesRead == AudioRecord.ERROR_INVALID_OPERATION -> {
                             Log.e(TAG, "Invalid operation during recording")
                             handleRecordingError("Invalid recording operation")
-                            break
+                            return
                         }
                         bytesRead == AudioRecord.ERROR_BAD_VALUE -> {
                             Log.e(TAG, "Bad value during recording")
                             handleRecordingError("Bad recording parameters")
-                            break
+                            return
                         }
                         else -> {
                             Log.w(TAG, "Unexpected read result: $bytesRead")
@@ -293,7 +305,7 @@ class AudioRecordManager(
             } catch (e: Exception) {
                 Log.e(TAG, "Error in recording loop", e)
                 handleRecordingError("Recording loop error: ${e.message}")
-                break
+                return
             }
         }
     }

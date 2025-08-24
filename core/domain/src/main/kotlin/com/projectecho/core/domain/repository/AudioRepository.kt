@@ -108,9 +108,9 @@ interface AudioRepository {
     suspend fun getRecording(id: String): AudioRecording?
     
     /**
-     * Get all recordings (suspend version for sync operations) 
+     * Get all recordings synchronously (for sync operations) 
      */
-    suspend fun getAllRecordings(): List<AudioRecording>
+    suspend fun getAllRecordingsSync(): List<AudioRecording>
     
     /**
      * Get audio data as InputStream for streaming

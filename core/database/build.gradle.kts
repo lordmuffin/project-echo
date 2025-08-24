@@ -29,6 +29,9 @@ dependencies {
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
+    
+    // Serialization for converters
+    implementation(libs.kotlinx.serialization.json)
 
     // Testing
     testImplementation(libs.bundles.testing)

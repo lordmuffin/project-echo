@@ -45,7 +45,7 @@ class WearableMessageClientImpl @Inject constructor(
             val nodes = nodeClient.connectedNodes.await()
             val jsonData = json.encodeToString<RecordingControlMessage>(message).toByteArray()
             
-            nodes.forEach { node ->
+            nodes.forEach { node: Node ->
                 messageClient.sendMessage(node.id, WearableMessagePaths.RECORDING_CONTROL, jsonData)
             }
             Result.Success(Unit)
@@ -74,7 +74,7 @@ class WearableMessageClientImpl @Inject constructor(
             val nodes = nodeClient.connectedNodes.await()
             val jsonData = json.encodeToString<RecordingStatusMessage>(message).toByteArray()
             
-            nodes.forEach { node ->
+            nodes.forEach { node: Node ->
                 messageClient.sendMessage(node.id, WearableMessagePaths.RECORDING_STATUS, jsonData)
             }
             Result.Success(Unit)
@@ -103,7 +103,7 @@ class WearableMessageClientImpl @Inject constructor(
             val nodes = nodeClient.connectedNodes.await()
             val jsonData = json.encodeToString<MetadataSyncMessage>(message).toByteArray()
             
-            nodes.forEach { node ->
+            nodes.forEach { node: Node ->
                 messageClient.sendMessage(node.id, WearableMessagePaths.METADATA_SYNC, jsonData)
             }
             Result.Success(Unit)
@@ -158,7 +158,7 @@ class WearableMessageClientImpl @Inject constructor(
             val nodes = nodeClient.connectedNodes.await()
             val jsonData = json.encodeToString(status).toByteArray()
             
-            nodes.forEach { node ->
+            nodes.forEach { node: Node ->
                 messageClient.sendMessage(node.id, WearableMessagePaths.DEVICE_CONNECTION, jsonData)
             }
             Result.Success(Unit)

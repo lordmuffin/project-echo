@@ -135,7 +135,7 @@ class AudioRecordingSystemTest {
         assertEquals(69, circularBuffer.getCapacityPercentage())
         
         // Fill to 85% capacity (should trigger warning)
-        val data15 = ByteArray(154) // Additional ~15%
+        val data15 = ByteArray(155) // Additional ~15% (total 871/1024 = 85.06%)
         circularBuffer.write(data15, 0, data15.size)
         assertTrue(circularBuffer.isNearCapacity())
         assertEquals(85, circularBuffer.getCapacityPercentage())

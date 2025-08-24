@@ -57,15 +57,4 @@ abstract class WearableModule {
         offlineSyncManagerImpl: OfflineSyncManagerImpl
     ): OfflineSyncManager
     
-    companion object {
-        @Provides
-        @Singleton
-        fun provideJson(): Json {
-            return Json {
-                ignoreUnknownKeys = true
-                coerceInputValues = true
-                encodeDefaults = true
-            }
-        }
-    }
 }

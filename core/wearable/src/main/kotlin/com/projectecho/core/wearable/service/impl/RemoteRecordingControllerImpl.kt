@@ -53,6 +53,7 @@ class RemoteRecordingControllerImpl @Inject constructor(
                     Result.Success(recordingId)
                 }
                 is Result.Error -> result
+                is Result.Loading -> result
             }
         } catch (e: Exception) {
             Result.Error(e)
@@ -77,6 +78,7 @@ class RemoteRecordingControllerImpl @Inject constructor(
                     
                     Result.Success(recordingIds)
                 }
+                is Result.Loading -> Result.Loading
             }
         } catch (e: Exception) {
             Result.Error(e)
@@ -107,7 +109,7 @@ class RemoteRecordingControllerImpl @Inject constructor(
     
     override suspend fun stopRecordingOnAllDevices(): Result<Unit> {
         return try {
-            val errors = mutableListOf<Exception>()
+            val errors = mutableListOf<Throwable>()
             
             activeRecordingSessions.values.forEach { session ->
                 if (session.status == RecordingSessionStatus.RECORDING || 
@@ -202,6 +204,7 @@ class RemoteRecordingControllerImpl @Inject constructor(
                     }
                     Result.Success(devices)
                 }
+                is Result.Loading -> Result.Loading
             }
         } catch (e: Exception) {
             Result.Error(e)

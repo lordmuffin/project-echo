@@ -16,6 +16,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 
@@ -23,7 +24,7 @@ android {
         kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
 
-    packagingOptions {
+    packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
@@ -46,9 +47,6 @@ dependencies {
     // Wear OS
     implementation(libs.bundles.wear.os)
     compileOnly(libs.wearable.support)
-    
-    // Wearable Data Layer
-    implementation(libs.wearable-data-layer)
 
     // Compose for Wear OS
     implementation(platform(libs.compose.bom))

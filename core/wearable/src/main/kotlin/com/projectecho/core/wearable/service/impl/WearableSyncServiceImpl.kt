@@ -47,7 +47,7 @@ class WearableSyncServiceImpl @Inject constructor(
                 tags = recording.tags,
                 duration = recording.duration,
                 fileSize = recording.fileSize,
-                format = recording.format,
+                format = recording.format.name,
                 sampleRate = recording.sampleRate,
                 bitRate = recording.bitRate,
                 createdAt = recording.createdAt,
@@ -69,6 +69,9 @@ class WearableSyncServiceImpl @Inject constructor(
                     emitSyncError(SyncErrorType.NETWORK_ERROR, "Failed to sync metadata: ${result.exception.message}", recordingId)
                     result
                 }
+                is Result.Loading -> {
+                    Result.Loading
+                }
             }
         } catch (e: Exception) {
             syncStatus.value = SyncStatus.FAILED
@@ -82,8 +85,10 @@ class WearableSyncServiceImpl @Inject constructor(
             syncStatus.value = SyncStatus.IN_PROGRESS
             val recordings = audioRepository.getAllRecordings()
             
-            recordings.forEach { recording ->
-                syncRecordingMetadata(recording.id)
+            recordings.collect { recordingList ->
+                recordingList.forEach { recording ->
+                    syncRecordingMetadata(recording.id)
+                }
             }
             
             syncStatus.value = SyncStatus.COMPLETED
@@ -172,12 +177,15 @@ class WearableSyncServiceImpl @Inject constructor(
             
             // Also update the data layer
             val metadata = wearableDataClient.getRecordingMetadata(recordingId)
-            if (metadata is Result.Success && metadata.data != null) {
-                val updatedMetadata = metadata.data.copy(
-                    title = title,
-                    updatedAt = System.currentTimeMillis()
-                )
-                wearableDataClient.putRecordingMetadata(updatedMetadata)
+            if (metadata is Result.Success) {
+                val metadataData = metadata.data
+                if (metadataData != null) {
+                    val updatedMetadata = metadataData.copy(
+                        title = title,
+                        updatedAt = System.currentTimeMillis()
+                    )
+                    wearableDataClient.putRecordingMetadata(updatedMetadata)
+                }
             }
             
             result
@@ -202,12 +210,15 @@ class WearableSyncServiceImpl @Inject constructor(
             
             // Also update the data layer
             val metadata = wearableDataClient.getRecordingMetadata(recordingId)
-            if (metadata is Result.Success && metadata.data != null) {
-                val updatedMetadata = metadata.data.copy(
-                    tags = tags,
-                    updatedAt = System.currentTimeMillis()
-                )
-                wearableDataClient.putRecordingMetadata(updatedMetadata)
+            if (metadata is Result.Success) {
+                val metadataData = metadata.data
+                if (metadataData != null) {
+                    val updatedMetadata = metadataData.copy(
+                        tags = tags,
+                        updatedAt = System.currentTimeMillis()
+                    )
+                    wearableDataClient.putRecordingMetadata(updatedMetadata)
+                }
             }
             
             result
@@ -232,12 +243,15 @@ class WearableSyncServiceImpl @Inject constructor(
             
             // Also update the data layer
             val metadata = wearableDataClient.getRecordingMetadata(recordingId)
-            if (metadata is Result.Success && metadata.data != null) {
-                val updatedMetadata = metadata.data.copy(
-                    description = description,
-                    updatedAt = System.currentTimeMillis()
-                )
-                wearableDataClient.putRecordingMetadata(updatedMetadata)
+            if (metadata is Result.Success) {
+                val metadataData = metadata.data
+                if (metadataData != null) {
+                    val updatedMetadata = metadataData.copy(
+                        description = description,
+                        updatedAt = System.currentTimeMillis()
+                    )
+                    wearableDataClient.putRecordingMetadata(updatedMetadata)
+                }
             }
             
             result
@@ -267,6 +281,7 @@ class WearableSyncServiceImpl @Inject constructor(
             when (result) {
                 is Result.Success -> Result.Success(recordingId)
                 is Result.Error -> result.let { Result.Error(it.exception) }
+                is Result.Loading -> Result.Loading
             }
         } catch (e: Exception) {
             emitSyncError(SyncErrorType.NETWORK_ERROR, e.message ?: "Failed to start remote recording")

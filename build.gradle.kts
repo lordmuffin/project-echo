@@ -14,25 +14,39 @@ plugins {
 subprojects {
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions {
-            jvmTarget = "1.8"
+            jvmTarget = "11"
             freeCompilerArgs += listOf(
                 "-opt-in=kotlin.RequiresOptIn",
                 "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
                 "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
                 "-opt-in=androidx.wear.compose.material.ExperimentalWearMaterialApi",
+                "-opt-in=kotlin.experimental.ExperimentalTypeInference",
+                "-Xallow-break-continue-in-lambdas"
+            )
+        }
+    }
+
+    // Configure KAPT to suppress experimental API warnings
+    tasks.withType<org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask> {
+        kotlinOptions {
+            jvmTarget = "11"
+            freeCompilerArgs += listOf(
+                "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
+                "-opt-in=androidx.wear.compose.material.ExperimentalWearMaterialApi",
+                "-Xallow-break-continue-in-lambdas"
             )
         }
     }
 
     // Configure Android modules
-    plugins.withId("com.android.application") {
-        configure<com.android.build.gradle.internal.dsl.BaseAppModuleExtension> {
+    pluginManager.withPlugin("com.android.application") {
+        extensions.configure<com.android.build.gradle.AppExtension> {
             configureAndroid()
         }
     }
     
-    plugins.withId("com.android.library") {
-        configure<com.android.build.gradle.LibraryExtension> {
+    pluginManager.withPlugin("com.android.library") {
+        extensions.configure<com.android.build.gradle.LibraryExtension> {
             configureAndroid()
         }
     }
@@ -60,15 +74,11 @@ fun com.android.build.gradle.BaseExtension.configureAndroid() {
     }
     
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    
-    packagingOptions {
-        resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 }
 
 tasks.register("clean", Delete::class) {
-    delete(rootProject.buildDir)
+    delete(rootProject.layout.buildDirectory.get())
 }

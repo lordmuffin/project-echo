@@ -1,12 +1,15 @@
-package com.projectecho
+package com.projectecho.watch
 
 import android.app.Application
 import android.util.Log
+import dagger.hilt.android.HiltAndroidApp
+import com.projectecho.watch.BuildConfig
 
 /**
  * Application class for Project Echo.
  * Handles app-level initialization and configuration.
  */
+@HiltAndroidApp
 class ProjectEchoApplication : Application() {
     companion object {
         private const val TAG = "ProjectEchoApp"

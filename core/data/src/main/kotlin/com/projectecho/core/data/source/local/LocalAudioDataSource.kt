@@ -1,5 +1,6 @@
 package com.projectecho.core.data.source.local
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.media.AudioFormat
 import android.media.AudioRecord
@@ -51,6 +52,7 @@ class LocalAudioDataSource @Inject constructor(
     fun getPlaybackState(): Flow<PlaybackState> = _playbackState.asStateFlow()
     fun getPlaybackPosition(): Flow<Long> = _playbackPosition.asStateFlow()
 
+    @SuppressLint("MissingPermission")
     suspend fun startRecording(config: RecordingConfig): Result<Unit> {
         try {
             if (isRecording) {
@@ -255,6 +257,23 @@ class LocalAudioDataSource @Inject constructor(
         return Result.Success(Unit)
     }
 
+    suspend fun getRecordingAudioStream(id: String): java.io.InputStream? {
+        try {
+            // Find recording file by ID - simplified implementation
+            val recordingsDir = File(context.filesDir, "recordings")
+            val files = recordingsDir.listFiles() ?: return null
+            
+            // In a real implementation, you'd look up the file path from the database
+            // For now, we'll try to find a file that might match
+            val file = files.firstOrNull { it.name.contains(id) }
+                ?: files.firstOrNull() // Fallback to first available file
+                
+            return file?.inputStream()
+        } catch (e: Exception) {
+            return null
+        }
+    }
+
     private fun startRecordingThread() {
         Thread {
             val buffer = ShortArray(bufferSize)
@@ -274,7 +293,7 @@ class LocalAudioDataSource @Inject constructor(
                         var index = 0
                         for (i in 0 until readResult) {
                             val sample = buffer[i]
-                            bytes[index++] = (sample and 0xff).toByte()
+                            bytes[index++] = (sample.toInt() and 0xff).toByte()
                             bytes[index++] = ((sample.toInt() shr 8) and 0xff).toByte()
                         }
                         outputStream.write(bytes)

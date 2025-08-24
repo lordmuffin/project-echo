@@ -23,7 +23,7 @@ android {
         kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
 
-    packagingOptions {
+    packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
@@ -44,7 +44,7 @@ dependencies {
     implementation(project(":features:permissions"))
 
     // Wearable Data Layer
-    implementation(libs.wearable-data-layer)
+    implementation(libs.wearable.data.layer)
 
     // AndroidX
     implementation(libs.androidx.core.ktx)

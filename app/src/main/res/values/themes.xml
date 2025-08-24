@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Base application theme for Wear OS -->
-    <style name="Theme.ProjectEcho" parent="Theme.MaterialComponents.Light.DarkActionBar">
+    <style name="Theme.ProjectEcho" parent="Theme.Material3.Dark">
         <item name="colorPrimary">#1976D2</item>
-        <item name="colorPrimaryVariant">#1565C0</item>
         <item name="colorOnPrimary">#FFFFFF</item>
         <item name="colorSecondary">#03DAC6</item>
-        <item name="colorSecondaryVariant">#018786</item>
         <item name="colorOnSecondary">#000000</item>
         <item name="colorError">#B00020</item>
         <item name="colorOnError">#FFFFFF</item>
@@ -27,6 +25,5 @@
     <style name="RecordingButton">
         <item name="android:layout_width">80dp</item>
         <item name="android:layout_height">80dp</item>
-        <item name="cornerRadius">40dp</item>
     </style>
 </resources>

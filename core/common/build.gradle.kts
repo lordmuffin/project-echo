@@ -7,14 +7,6 @@ plugins {
 
 android {
     namespace = "com.projectecho.core.common"
-
-    buildFeatures {
-        compose = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
-    }
 }
 
 dependencies {
