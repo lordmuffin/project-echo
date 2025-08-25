@@ -2,6 +2,7 @@ package com.projectecho
 
 import android.app.Application
 import android.util.Log
+import com.projectecho.phone.BuildConfig
 import dagger.hilt.android.HiltAndroidApp
 
 /**
