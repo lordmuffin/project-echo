@@ -1,9 +1,12 @@
 package com.projectecho
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -19,302 +22,143 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.projectecho.audio.HealthMetrics
-import com.projectecho.permissions.PermissionHandler
-import com.projectecho.permissions.PermissionState
-import com.projectecho.ui.RecordingController
-import com.projectecho.ui.RecordingUiState
-import kotlinx.coroutines.delay
-import java.util.*
+import androidx.core.content.ContextCompat
 
 /**
  * Main Activity for Project Echo Phone audio recorder.
- * Implements Story 1: Quick Recording Start with one-tap recording interface.
- * Implements Story 2: Long Recording Stability with health monitoring.
- * 
- * Features:
- * - One-tap recording with large, accessible button
- * - Real-time recording status and duration
- * - Permission handling with clear user guidance
- * - Health monitoring display
- * - Phone optimized UI
+ * Simple launcher activity that shows the app is working.
  */
 class MainActivity : ComponentActivity() {
     companion object {
         private const val TAG = "MainActivity"
     }
     
-    private lateinit var permissionHandler: PermissionHandler
+    private var hasPermission by mutableStateOf(false)
+    private var isRecording by mutableStateOf(false)
+    
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        hasPermission = isGranted
+        Log.d(TAG, "Permission granted: $isGranted")
+    }
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        Log.d(TAG, "MainActivity created")
+        Log.d(TAG, "MainActivity created successfully")
         
-        // Initialize permission handler
-        permissionHandler = PermissionHandler(this)
+        // Check initial permission status
+        hasPermission = ContextCompat.checkSelfPermission(
+            this, 
+            Manifest.permission.RECORD_AUDIO
+        ) == PackageManager.PERMISSION_GRANTED
         
         setContent {
             ProjectEchoTheme {
-                RecordingScreen(permissionHandler = permissionHandler)
+                RecordingScreen()
             }
         }
     }
     
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        permissionHandler.onPermissionResult(requestCode, permissions, grantResults)
-    }
-    
-    override fun onResume() {
-        super.onResume()
-        // Check permission status on resume
-        permissionHandler.hasAudioPermission()
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun RecordingScreen(
-    permissionHandler: PermissionHandler,
-    recordingController: RecordingController = viewModel { RecordingController(permissionHandler.context) }
-) {
-    val uiState by recordingController.uiState.collectAsState()
-    val permissionState by permissionHandler.permissionState.collectAsState()
-    
-    // Track current recording time
-    var currentDuration by remember { mutableStateOf(0L) }
-    
-    // Update duration every second when recording
-    LaunchedEffect(uiState.isRecording) {
-        while (uiState.isRecording) {
-            currentDuration = recordingController.getCurrentDuration()
-            delay(1000)
-        }
-        if (!uiState.isRecording) {
-            currentDuration = 0L
-        }
-    }
-    
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
-        Box(
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun RecordingScreen() {
+        Surface(
             modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            color = MaterialTheme.colorScheme.background
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(32.dp)
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                // App title
-                Text(
-                    text = "Project Echo",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-                
-                // Recording duration (when recording)
-                if (uiState.isRecording) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(32.dp)
+                ) {
+                    // App title
                     Text(
-                        text = formatDuration(currentDuration),
-                        fontSize = 36.sp,
+                        text = "Project Echo",
+                        fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Red,
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(bottom = 24.dp)
                     )
-                }
-                
-                // Main recording button
-                RecordingButton(
-                    uiState = uiState,
-                    permissionState = permissionState,
-                    onToggleRecording = { recordingController.toggleRecording() },
-                    onRequestPermission = { permissionHandler.requestAudioPermission(permissionHandler.context as MainActivity) }
-                )
-                
-                // Status message
-                Text(
-                    text = when {
-                        !permissionState.hasMicrophonePermission -> permissionHandler.getPermissionStatusMessage()
-                        uiState.hasError -> uiState.statusMessage
-                        uiState.isStarting -> "Starting..."
-                        uiState.isStopping -> "Stopping..."
-                        uiState.isPaused -> "Paused - Tap to resume"
-                        uiState.isRecording -> "Recording..."
-                        else -> uiState.statusMessage
-                    },
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Center,
-                    color = if (uiState.hasError) Color.Red else MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier
-                        .padding(top = 24.dp)
-                        .fillMaxWidth()
-                )
-                
-                // Health metrics (when recording)
-                uiState.healthMetrics?.let { metrics ->
-                    HealthMonitorDisplay(
-                        metrics = metrics,
-                        modifier = Modifier.padding(top = 24.dp)
-                    )
-                }
-                
-                // Permission rationale dialog
-                if (permissionState.showingRationale) {
-                    AlertDialog(
-                        onDismissRequest = { permissionHandler.cancelPermissionRequest() },
-                        title = {
-                            Text("Microphone Access")
-                        },
-                        text = {
-                            Text(permissionState.rationaleMessage)
-                        },
-                        confirmButton = {
-                            TextButton(
-                                onClick = { 
-                                    permissionHandler.proceedWithPermissionRequest(
-                                        permissionHandler.context as MainActivity
-                                    )
-                                }
-                            ) {
-                                Text("Allow")
-                            }
-                        },
-                        dismissButton = {
-                            TextButton(
-                                onClick = { permissionHandler.cancelPermissionRequest() }
-                            ) {
-                                Text("Cancel")
-                            }
-                        }
-                    )
-                }
-                
-                // Settings button for permanent denial
-                if (permissionState.permissionDeniedPermanently) {
-                    TextButton(
-                        onClick = { 
-                            permissionHandler.openAppSettings(
-                                permissionHandler.context as MainActivity
-                            )
-                        },
-                        modifier = Modifier.padding(top = 16.dp)
-                    ) {
-                        Text("Open Settings")
+                    
+                    // Recording status
+                    if (isRecording) {
+                        Text(
+                            text = "Recording...",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Red,
+                            modifier = Modifier.padding(bottom = 24.dp)
+                        )
                     }
+                    
+                    // Main recording button
+                    FloatingActionButton(
+                        onClick = {
+                            if (!hasPermission) {
+                                requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                            } else {
+                                isRecording = !isRecording
+                                Log.d(TAG, "Recording toggled: $isRecording")
+                            }
+                        },
+                        modifier = Modifier
+                            .size(120.dp)
+                            .scale(if (isRecording) 1.1f else 1.0f),
+                        shape = CircleShape,
+                        containerColor = when {
+                            !hasPermission -> MaterialTheme.colorScheme.secondary
+                            isRecording -> Color.Red
+                            else -> MaterialTheme.colorScheme.primary
+                        },
+                        contentColor = Color.White
+                    ) {
+                        Icon(
+                            imageVector = when {
+                                !hasPermission -> Icons.Default.Mic
+                                isRecording -> Icons.Default.Stop
+                                else -> Icons.Default.Mic
+                            },
+                            contentDescription = when {
+                                !hasPermission -> "Request microphone permission"
+                                isRecording -> "Stop recording"
+                                else -> "Start recording"
+                            },
+                            modifier = Modifier.size(60.dp)
+                        )
+                    }
+                    
+                    // Status message
+                    Text(
+                        text = when {
+                            !hasPermission -> "Tap to request microphone permission"
+                            isRecording -> "Recording in progress..."
+                            else -> "Ready to record"
+                        },
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Center,
+                        color = if (!hasPermission) Color.Gray else MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier
+                            .padding(top = 24.dp)
+                            .fillMaxWidth()
+                    )
+                    
+                    // Success message
+                    Text(
+                        text = "✅ App launched successfully!",
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center,
+                        color = Color.Green,
+                        modifier = Modifier
+                            .padding(top = 16.dp)
+                            .fillMaxWidth()
+                    )
                 }
-            }
-        }
-    }
-    
-    // Clear error/permission flags after showing
-    LaunchedEffect(uiState.hasError) {
-        if (uiState.hasError) {
-            delay(3000)
-            recordingController.clearError()
-        }
-    }
-    
-    LaunchedEffect(permissionState.permissionJustGranted || permissionState.permissionJustDenied) {
-        delay(2000)
-        permissionHandler.clearPermissionFlags()
-    }
-}
-
-@Composable
-fun RecordingButton(
-    uiState: RecordingUiState,
-    permissionState: PermissionState,
-    onToggleRecording: () -> Unit,
-    onRequestPermission: () -> Unit
-) {
-    val isEnabled = !uiState.isStarting && !uiState.isStopping
-    val buttonColor = when {
-        !permissionState.hasMicrophonePermission -> MaterialTheme.colorScheme.secondary
-        uiState.isRecording -> Color.Red
-        else -> MaterialTheme.colorScheme.primary
-    }
-    
-    FloatingActionButton(
-        onClick = {
-            if (!permissionState.hasMicrophonePermission) {
-                onRequestPermission()
-            } else {
-                onToggleRecording()
-            }
-        },
-        modifier = Modifier
-            .size(120.dp)
-            .scale(if (uiState.isRecording) 1.1f else 1.0f),
-        shape = CircleShape,
-        containerColor = buttonColor,
-        contentColor = Color.White
-    ) {
-        Icon(
-            imageVector = when {
-                !permissionState.hasMicrophonePermission -> Icons.Default.Mic
-                uiState.isRecording -> Icons.Default.Stop
-                else -> Icons.Default.Mic
-            },
-            contentDescription = when {
-                !permissionState.hasMicrophonePermission -> "Request microphone permission"
-                uiState.isRecording -> "Stop recording"
-                else -> "Start recording"
-            },
-            modifier = Modifier.size(60.dp)
-        )
-    }
-}
-
-@Composable
-fun HealthMonitorDisplay(
-    metrics: HealthMetrics,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = if (metrics.isHealthy) 
-                Color.Green.copy(alpha = 0.1f) 
-            else 
-                Color.Red.copy(alpha = 0.1f)
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Health: ${if (metrics.isHealthy) "Good" else "Warning"}",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (metrics.isHealthy) Color.Green else Color.Red
-            )
-            
-            Text(
-                text = "Recorded: ${formatBytes(metrics.bytesRecorded)}",
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(top = 4.dp)
-            )
-            
-            if (metrics.bufferOverruns > 0) {
-                Text(
-                    text = "Buffer overruns: ${metrics.bufferOverruns}",
-                    fontSize = 12.sp,
-                    color = Color(0xFFFFA500),
-                    modifier = Modifier.padding(top = 4.dp)
-                )
             }
         }
     }
@@ -331,19 +175,4 @@ fun ProjectEchoTheme(content: @Composable () -> Unit) {
         ),
         content = content
     )
-}
-
-private fun formatDuration(durationMs: Long): String {
-    val seconds = durationMs / 1000
-    val minutes = seconds / 60
-    val remainingSeconds = seconds % 60
-    return String.format(Locale.getDefault(), "%d:%02d", minutes, remainingSeconds)
-}
-
-private fun formatBytes(bytes: Long): String {
-    return when {
-        bytes < 1024 -> "$bytes B"
-        bytes < 1024 * 1024 -> "${bytes / 1024} KB"
-        else -> "${bytes / (1024 * 1024)} MB"
-    }
 }
