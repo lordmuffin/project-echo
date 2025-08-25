@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Project Echo</string>
+    
+    <!-- Recording UI -->
+    <string name="start_recording">Start Recording</string>
+    <string name="stop_recording">Stop Recording</string>
+    <string name="recording_in_progress">Recording...</string>
+    <string name="recording_paused">Recording Paused</string>
+    <string name="recording_stopped">Recording Stopped</string>
+    
+    <!-- Permissions -->
+    <string name="microphone_permission_title">Microphone Access</string>
+    <string name="microphone_permission_message">This app needs microphone access to record audio. Grant permission to start recording your voice notes and meetings.</string>
+    <string name="microphone_permission_denied">Microphone access denied. Recording features will not work.</string>
+    <string name="microphone_permission_settings">Enable microphone permission in Settings > Apps > Permissions.</string>
+    
+    <!-- Status Messages -->
+    <string name="ready_to_record">Ready to record</string>
+    <string name="initializing_audio">Initializing audio system...</string>
+    <string name="audio_focus_lost">Recording paused: Audio interruption</string>
+    <string name="recording_error">Recording error occurred</string>
+    <string name="buffer_overrun_warning">Buffer overrun detected</string>
+    
+    <!-- Health Monitoring -->
+    <string name="health_good">Health: Good</string>
+    <string name="health_warning">Health: Warning</string>
+    <string name="bytes_recorded">Recorded: %1$s</string>
+    <string name="buffer_overruns">Buffer overruns: %1$d</string>
+    
+    <!-- Actions -->
+    <string name="open_settings">Open Settings</string>
+    <string name="allow">Allow</string>
+    <string name="cancel">Cancel</string>
+    <string name="retry">Retry</string>
+</resources>
