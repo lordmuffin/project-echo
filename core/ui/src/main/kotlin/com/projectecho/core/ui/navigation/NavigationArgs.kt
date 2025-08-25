@@ -32,9 +32,9 @@ sealed class NavigationArgs {
                 val params = mutableListOf<String>()
                 recordingId?.let { params.add("recordingId=$it") }
                 if (autoStart) params.add("autoStart=$autoStart")
-                "${NavigationRoutes.RECORDING}?${params.joinToString("&")}"
+                "${NavigationRoutes.RECORDING_SCREEN}?${params.joinToString("&")}"
             } else {
-                NavigationRoutes.RECORDING
+                NavigationRoutes.RECORDING_SCREEN
             }
         }
 
@@ -61,7 +61,7 @@ sealed class NavigationArgs {
             val params = mutableListOf("recordingId=$recordingId")
             if (autoPlay) params.add("autoPlay=$autoPlay")
             if (startPosition > 0) params.add("startPosition=$startPosition")
-            return "${NavigationRoutes.PLAYBACK}?${params.joinToString("&")}"
+            return "${NavigationRoutes.RECORDING_PLAYBACK}?${params.joinToString("&")}"
         }
 
         companion object {
@@ -185,20 +185,6 @@ enum class SettingsSection {
     SYNC,
     PRIVACY,
     ABOUT
-}
-
-/**
- * Navigation routes constants with type safety.
- */
-object NavigationRoutes {
-    const val RECORDING = "recording"
-    const val PLAYBACK = "playback"
-    const val RECORDINGS_LIST = "recordings_list"
-    const val SETTINGS = "settings"
-    
-    // Wear-specific routes
-    const val WATCH_HOME = "watch_home"
-    const val WATCH_RECORDINGS = "watch_recordings"
 }
 
 /**

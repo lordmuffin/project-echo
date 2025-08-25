@@ -20,8 +20,7 @@ subprojects {
                 "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
                 "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
                 "-opt-in=androidx.wear.compose.material.ExperimentalWearMaterialApi",
-                "-opt-in=kotlin.experimental.ExperimentalTypeInference",
-                "-Xallow-break-continue-in-lambdas"
+                "-opt-in=kotlin.experimental.ExperimentalTypeInference"
             )
         }
     }
@@ -32,8 +31,7 @@ subprojects {
             jvmTarget = "11"
             freeCompilerArgs += listOf(
                 "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
-                "-opt-in=androidx.wear.compose.material.ExperimentalWearMaterialApi",
-                "-Xallow-break-continue-in-lambdas"
+                "-opt-in=androidx.wear.compose.material.ExperimentalWearMaterialApi"
             )
         }
     }

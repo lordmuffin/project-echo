@@ -10,6 +10,13 @@ android {
 }
 
 dependencies {
+    // Compose BOM for Material3 APIs
+    implementation(platform(libs.compose.bom))
+    implementation(libs.compose.material3)
+    
+    // Wear Compose for Material APIs
+    implementation(libs.wear.compose.material)
+
     // Dependency Injection
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
